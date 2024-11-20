@@ -5,9 +5,9 @@
     kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
     kind: NodePool
     namespace: "{{ nodepool_namespace }}"
-  register: nodepoolInfo
+  register: nodepoolinfo
 
-- name: create performance profile config map
+- name: Create performance profile config map
   kubernetes.core.k8s:
     kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
     state: present
@@ -55,7 +55,7 @@
       apiVersion: hypershift.openshift.io/v1beta1
       kind: NodePool
       metadata:
-        name: "{{ nodepoolInfo.resources[0].metadata.name }}"
+        name: "{{ nodepoolinfo.resources[0].metadata.name }}"
         namespace: "{{ nodepool_namespace }}"
       spec:
         tuningConfig:
@@ -66,7 +66,7 @@
     api_version: hypershift.openshift.io/v1beta1
     kind: NodePool
     kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
-    name: "{{ nodepoolInfo.resources[0].metadata.name }}"
+    name: "{{ nodepoolinfo.resources[0].metadata.name }}"
     namespace: "{{ nodepool_namespace }}"
   register: nodepool_updating
   until:
@@ -81,8 +81,8 @@
     api_version: hypershift.openshift.io/v1beta1
     kind: NodePool
     kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
-    name: "{{ nodepoolInfo.resources[0].metadata.name }}"
-    namespace: "{{ nodepoolInfo.resources[0].metadata.namespace }}"
+    name: "{{ nodepoolinfo.resources[0].metadata.name }}"
+    namespace: "{{ nodepoolinfo.resources[0].metadata.namespace }}"
   register: nodepool_updated
   until:
     - "'resources' in nodepool_updated"
