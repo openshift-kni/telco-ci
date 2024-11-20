@@ -1,17 +1,19 @@
-namespace: telco5g
+namespace: rhtelco
 name: automation
 readme: README.md
-authors: Telco5G DevOps CI team
+authors:
+  - "Telco5G DevOps CI team"
 description: Telco5G automation collection
-license: GPL-3.0-or-later
+license:
+  - GPL-3.0-or-later
 tags:
   - automation
   - telco
 dependencies: {}
-repository: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
-documentation: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
-homepage: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
-issues: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
+repository: https://github.com/openshift-kni/telco-ci
+documentation: https://github.com/openshift-kni/telco-ci
+homepage: https://github.com/openshift-kni/telco-ci
+issues: https://github.com/openshift-kni/telco-ci
 build_ignore:
   - "*.tar.gz"
   - build_artifact

@@ -1,6 +1,6 @@
 mock_roles:
-  - telco5g.automation.hyperv
-  - telco5g.automation.hv_provision
+  - rhtelco.automation.hyperv
+  - rhtelco.automation.hv_provision
 exclude_paths:
   - playbooks/_*.yml
   - roles/
