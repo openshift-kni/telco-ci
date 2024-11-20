@@ -1,0 +1,163 @@
+---
+# tasks file for lvms_operator_install
+- name: Create namespace for LVMS
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+    name: "{{ lvms_operator_install_namespace }}"
+    state: present
+
+- name: Create operator group for LVMS
+  kubernetes.core.k8s:
+    api_version: operators.coreos.com/v1
+    kind: OperatorGroup
+    kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+    name: lvms-operator-operatorgroup
+    namespace: "{{ lvms_operator_install_namespace }}"
+    resource_definition:
+      spec:
+        targetNamespaces:
+          - "{{ lvms_operator_install_namespace }}"
+
+- name: Find recommended version of LVMS if channel not defined
+  when: lvms_operator_install_channel is not defined
+  block:
+    - name: Find recommended version of LVMS
+      kubernetes.core.k8s_info:
+        api_version: packages.operators.coreos.com/v1
+        kind: PackageManifest
+        kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+        name: lvms-operator
+        namespace: openshift-marketplace
+      register: lvm_version
+
+    - name: Get the current state of OperatorHub if no recommended version found
+      kubernetes.core.k8s:
+        api_version: config.openshift.io/v1
+        kind: OperatorHub
+        kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+        name: cluster
+        namespace: openshift-marketplace
+      register: operatorhub_state
+      when: lvm_version.resources | length == 0
+
+    # Exit if no recommended version found
+    - name: Fail if OperatorHub sources are disabled
+      ansible.builtin.fail:
+        msg: >-
+          No recommended version of LVMS found, OperatorHub sources are disabled:
+          disableAllDefaultSources is set to {{ operatorhub_state.result.spec.disableAllDefaultSources }}.
+          Make sure to enable the OperatorHub sources: oc patch OperatorHub cluster --type json -p
+          '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": false}]'
+      when:
+        - lvm_version.resources | length == 0
+        - operatorhub_state.result.spec is defined
+        - operatorhub_state.result.spec is not none
+        - "'disableAllDefaultSources' in operatorhub_state.result.spec"
+        - operatorhub_state.result.spec.disableAllDefaultSources | str == "true"
+
+    - name: Fail if no recommended version found
+      ansible.builtin.fail:
+        msg: >-
+          No recommended version of LVMS found for the current version.
+      when:
+        - lvm_version.resources | length == 0
+
+    - name: Set lvms channel as the default one
+      ansible.builtin.set_fact:
+        lvms_operator_install_channel: "{{ lvm_version.resources[0].status.defaultChannel }}"
+
+- name: Subscribe for LVMS
+  kubernetes.core.k8s:
+    api_version: operators.coreos.com/v1alpha1
+    kind: Subscription
+    kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+    name: lvms-operator-subscription
+    namespace: "{{ lvms_operator_install_namespace }}"
+    resource_definition:
+      spec:
+        sourceNamespace: openshift-marketplace
+        source: "{{ lvms_operator_source }}"
+        channel: "{{ lvms_operator_install_channel }}"
+        installPlanApproval: Automatic
+        name: lvms-operator
+
+- name: Ensure LVMS CSV phase has Succeeded before proceeding
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: "{{ lvms_operator_install_namespace }}"
+  register: lvm_csv_status
+  until:
+    - "'resources' in lvm_csv_status"
+    - lvm_csv_status.resources | length > 0
+    - "lvm_csv_status.resources[0].status.phase == 'Succeeded'"
+  retries: 20
+  delay: 30
+  ignore_errors: true
+
+- name: Fail if LVMS CSV phase is not Succeeded
+  ansible.builtin.fail:
+    msg: |
+      Status: {{ lvm_csv_status.resources[0].status.phase | default('Unknown') }}
+      Reason: {{ lvm_csv_status.resources[0].status.reason | default('Unknown') }}
+      Message: {{ lvm_csv_status.resources[0].status.message | default('Unknown') }}
+  when: lvm_csv_status is failed
+
+# Pause for 20 seconds to allow the operator to deploy the CRDs
+- name: Pause for 20 seconds
+  ansible.builtin.pause:
+    seconds: 20
+
+- name: Create LVMS storage
+  kubernetes.core.k8s:
+    api_version: lvm.topolvm.io/v1alpha1
+    kind: LVMCluster
+    kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+    name: lvmcluster
+    namespace: "{{ lvms_operator_install_namespace }}"
+    resource_definition:
+      spec:
+        storage:
+          deviceClasses:
+            - name: vg1
+              thinPoolConfig:
+                name: vg1-thin-pool
+                sizePercent: 90
+                overprovisionRatio: 10
+  register: lvm_cluster_status
+
+- name: Fail if LVMS has not deployed successfully
+  ansible.builtin.fail:
+    msg: |
+      State: {{ lvm_cluster_status.resources[0].status.state | default('Unknown') }}
+      Status: {{ lvm_cluster_status.resources[0].status.phase | default('Unknown') }}
+      Reason: {{ lvm_cluster_status.resources[0].status.reason | default('Unknown') }}
+      Message: {{ lvm_cluster_status.resources[0].status.message | default('Unknown') }}
+  when: lvm_cluster_status is failed
+
+- name: Check LVM cluster status
+  kubernetes.core.k8s_info:
+    api_version: lvm.topolvm.io/v1alpha1
+    kind: LVMCluster
+    kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+    name: lvmcluster
+    namespace: openshift-storage
+  register: lvmcluster_status
+  until: lvmcluster_status.resources[0].status.state == "Ready"
+  retries: 10
+  delay: 30
+  failed_when: lvmcluster_status.resources[0].status.state != "Ready"
+
+- name: Set default StorageClass
+  kubernetes.core.k8s:
+    state: present
+    kind: StorageClass
+    kubeconfig: "{{ lvms_operator_install_kubeconfig_file | default(omit) }}"
+    name: lvms-vg1
+    definition:
+      metadata:
+        annotations:
+          storageclass.kubernetes.io/is-default-class: "true"
