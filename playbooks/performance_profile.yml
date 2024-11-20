@@ -15,6 +15,6 @@
 
 - hosts: localhost
   tasks:
-    - name: Apply performance profile../telco-ci/
+    - name: Apply performance profile
       vars:
         pp_kubeconfig: "{{ kubeconfig }}"
