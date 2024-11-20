@@ -7,8 +7,3 @@ collections:
     version: 5.0.0
   - name: kubevirt.core # Utilized in deploy_manager_vm role
     version: 2.1.0
-
-roles:
-  - name: storage  # for managing storage on HV
-    src: https://github.com/linux-system-roles/storage
-    version: 1.8.1

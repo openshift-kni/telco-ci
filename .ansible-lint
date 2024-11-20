@@ -1,6 +1,16 @@
 mock_roles:
   - rhtelco.automation.hyperv
   - rhtelco.automation.hv_provision
+
 exclude_paths:
   - playbooks/_*.yml
-  # - roles/
+  - roles/storage
+
+skip_list:
+  - skip_this_tag
+
+warn_list:
+  - fqcn[action-core]
+  - galaxy[no-changelog]
+  - var-naming[no-role-prefix]
+  - name[play]

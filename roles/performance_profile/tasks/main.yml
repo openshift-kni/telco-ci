@@ -59,7 +59,7 @@
         namespace: "{{ nodepool_namespace }}"
       spec:
         tuningConfig:
-        - name: "{{ performance_configmap_name }}"
+          - name: "{{ performance_configmap_name }}"
 
 - name: Check if Nodepool is updating
   kubernetes.core.k8s_info:
