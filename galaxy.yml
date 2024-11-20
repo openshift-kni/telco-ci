@@ -9,6 +9,9 @@ license:
 tags:
   - automation
   - telco
+  - infrastructure
+  - linux
+  - tools
 dependencies: {}
 repository: https://github.com/openshift-kni/telco-ci
 documentation: https://github.com/openshift-kni/telco-ci

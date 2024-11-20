@@ -1,5 +1,4 @@
 ---
-##
 # This playbook applies performance profile configmap to
 # hosted cluster nodes.
 # Note: Currently this playbook assumes there is only one
@@ -10,13 +9,13 @@
 # Provide
 # kubeconfig path of the management clusters example: /home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
 #
-#ansible-playbook -vv playbooks/performance_profile.yml -e kubeconfig=/home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
-##
+# ansible-playbook -vv playbooks/performance_profile.yml -e kubeconfig=/home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
 
 - hosts: localhost
   tasks:
-  - name: Apply performance profile
-    vars:
-      pp_kubeconfig: "{{ kubeconfig }}"
-    include_role:
-      name: performance_profile
+
+    - name: Apply performance profile
+      vars:
+        pp_kubeconfig: "{{ kubeconfig }}"
+      include_role:
+        name: performance_profile
