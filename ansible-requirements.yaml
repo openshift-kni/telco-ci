@@ -1,0 +1,14 @@
+---
+collections:
+  - name: dellemc.openmanage  # For DELL servers management
+  - name: community.general  # For HP iLO and other useful stuff
+  - name: ansible.posix
+  - name: kubernetes.core  # Utilized in RHACM role acm_operator_install
+    version: 5.0.0
+  - name: kubevirt.core # Utilized in deploy_manager_vm role
+    version: 2.1.0
+
+roles:
+  - name: storage  # for managing storage on HV
+    src: https://github.com/linux-system-roles/storage
+    version: 1.8.1

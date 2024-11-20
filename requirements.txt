@@ -1,0 +1,7 @@
+ansible-core<2.17  # https://github.com/ansible/ansible/issues/82068#issuecomment-2123567229
+omsdk # required for Ansible module dellemc.openmanage.idrac_system_info
+python-hpilo # required for Ansible module community.general.hpilo_info
+PyYAML
+xmltodict # required for Sagi's dell_hwinv.py module
+dnspython  # required for lookup plugin dns
+netaddr  # required for ipaddr filter

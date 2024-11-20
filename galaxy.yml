@@ -1,0 +1,28 @@
+namespace: telco5g
+name: automation
+readme: README.md
+authors: Telco5G DevOps CI team
+description: Telco5G automation collection
+license: GPL-3.0-or-later
+tags:
+  - automation
+  - telco
+dependencies: {}
+repository: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
+documentation: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
+homepage: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
+issues: https://gitlab.cee.redhat.com/telco-5g-devops-ci-infra/ansible-automation
+build_ignore:
+  - "*.tar.gz"
+  - build_artifact
+  - test-requirements*
+  - tests
+  - tox.ini
+  - .gitignore
+  - .pytest_cache
+  - .tox
+  - .env
+  - .vscode
+  - contrib
+  - changelogs
+version: 0.0.1
