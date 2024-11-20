@@ -17,5 +17,5 @@
     - name: Apply performance profile
       vars:
         pp_kubeconfig: "{{ kubeconfig }}"
-      include_role:
+      ansible.builtin.include_role:
         name: performance_profile

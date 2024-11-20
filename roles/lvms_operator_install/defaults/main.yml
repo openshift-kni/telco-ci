@@ -1,0 +1,8 @@
+---
+# Name of project LVMS is installed into
+lvms_operator_install_namespace: openshift-storage
+lvms_operator_source: redhat-operators
+# Path to kubeconfig file to use for installation, or K8S_AUTH_KUBECONFIG environment variable is used
+# lvms_operator_install_kubeconfig_file:
+# LVMS Catalog Channel to install from
+# lvms_operator_install_channel:
