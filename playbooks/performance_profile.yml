@@ -1,0 +1,20 @@
+---
+##
+# This playbook applies performance profile configmap to
+# hosted cluster nodes.
+# Note: Currently this playbook assumes there is only one
+# Nodepool and also assumes that baremetal hosted node is having 112 cpus with hyperthreading enabled
+
+# TODO: In future use Performance Profile creator to create Performance Profile
+
+# Provide
+# kubeconfig path of the management clusters example: /home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
+#
+#ansible-playbook -vv playbooks/performance_profile.yml -e kubeconfig=/home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
+##
+
+- hosts: localhost
+  tasks:
+    - name: Apply performance profile../telco-ci/
+      vars:
+        pp_kubeconfig: "{{ kubeconfig }}"

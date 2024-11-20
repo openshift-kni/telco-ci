@@ -1,0 +1,4 @@
+---
+performance_configmap_name: performance
+performance_profile_name: performance
+nodepool_namespace: clusters
