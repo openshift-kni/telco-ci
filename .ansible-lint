@@ -3,4 +3,4 @@ mock_roles:
   - rhtelco.automation.hv_provision
 exclude_paths:
   - playbooks/_*.yml
-  - roles/
+  # - roles/
