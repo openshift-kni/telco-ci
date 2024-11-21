@@ -33,12 +33,21 @@ options:
     description:
       - OCP tag (4.12, 4.11, etc)
     type: str
+  debug:
+    description:
+      - Enable debug mode
+    type: bool
+    default: false
 requirements:
   - requests
 '''
 
 RETURN = '''
-image: quay.io/openshift-release-dev/ocp-release@sha256:d9729e....
+image:
+    description: Image of OCP in quay.io
+    returned: always
+    type: str
+    sample: quay.io/openshift-release-dev/ocp-release@sha256:d9729e....
 '''
 
 EXAMPLES = '''
@@ -70,7 +79,18 @@ EXAMPLES = '''
 '''
 
 from ansible.module_utils.basic import AnsibleModule  # noqa: E402
-import requests  # noqa: E402
+from ansible.module_utils.basic import missing_required_lib  # noqa: E402
+
+import traceback  # noqa: E402
+
+try:
+    import requests  # noqa: E402
+except ImportError:
+    HAS_REQUESTS = False
+    REQUESTS_IMPORT_ERROR = traceback.format_exc()
+else:
+    HAS_REQUESTS = True
+    REQUESTS_IMPORT_ERROR = None
 
 
 API_URL = "https://amd64.ocp.releases.ci.openshift.org/api/v1/releasestream/%s.0-0.%s/latest"
@@ -159,9 +179,14 @@ def main():
             debug=dict(type='bool', default=False),
         ),
         supports_check_mode=True,
-        mutually_exclusive=["tag", "full_tag"],
+        mutually_exclusive=[("tag", "full_tag")],
 
     )
+
+    if not HAS_REQUESTS:
+        module.fail_json(
+            msg=missing_required_lib('requests'),
+            exception=REQUESTS_IMPORT_ERROR)
 
     tag = module.params['tag']
     release = module.params['release']
