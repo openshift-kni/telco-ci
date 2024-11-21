@@ -5,3 +5,4 @@ PyYAML
 xmltodict # required for Sagi's dell_hwinv.py module
 dnspython  # required for lookup plugin dns
 netaddr  # required for ipaddr filter
+requests
