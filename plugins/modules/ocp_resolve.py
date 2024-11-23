@@ -179,8 +179,6 @@ def main():
             debug=dict(type='bool', default=False),
         ),
         supports_check_mode=True,
-        mutually_exclusive=[("tag", "full_tag")],
-
     )
 
     if not HAS_REQUESTS:
