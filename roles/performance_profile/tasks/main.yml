@@ -90,3 +90,7 @@
     - nodepool_updated.resources[0].status.conditions | json_query("[?type=='Ready' && status=='True']") | length > 0
   retries: 30
   delay: 60
+
+- name: Lets wait for 10 min to settle
+  ansible.builtin.pause:
+    minutes: 10
