@@ -87,9 +87,9 @@
   until:
     - "'resources' in nodepool_updated"
     - nodepool_updated.resources | length > 0
-    - nodepool_updated.resources[0].status.conditions | json_query("[?type=='Ready' && status=='True']") | length > 0
-  retries: 30
-  delay: 60
+    - nodepool_updated.resources[0].status.conditions | json_query("[?type=='UpdatingConfig' && status=='False']") | length > 0
+  retries: 80
+  delay: 20
 
 - name: Lets wait for 10 min to settle
   ansible.builtin.pause:
