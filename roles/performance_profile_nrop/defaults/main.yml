@@ -1,0 +1,4 @@
+---
+performance_profile_nrop_configmap_name: performance_nrop
+performance_profile_nrop_profile_name: performance_nrop
+performance_profile_nrop_np_namespace: clusters
