@@ -1,0 +1,20 @@
+---
+# This playbook applies performance profile configmap to hosted cluster nodes.
+# Note: Currently this playbook assumes there is only one Nodepool and 2 BM nodes on Hosted Cluster under the same Nodepool
+# Note: The baremetal nodes is having 112 cpus
+# Note: SMT alignment is off
+
+# Provide
+# kubeconfig path of the management clusters example: /home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
+
+# Example
+# ansible-playbook -vv playbooks/performance_profile_nrop.yml -e kubeconfig=/home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
+- name: Apply Performance Profile for NROP
+  hosts: localhost
+  tasks:
+
+    - name: Apply Performance Profile required for NROP
+      vars:
+        pp_kubeconfig: "{{ kubeconfig }}"
+      ansible.builtin.include_role:
+        name: performance_profile_nrop

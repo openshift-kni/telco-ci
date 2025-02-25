@@ -1,0 +1,86 @@
+---
+- name: Get node pool
+  kubernetes.core.k8s_info:
+    api_version: hypershift.openshift.io/v1beta1
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
+    kind: NodePool
+    namespace: "{{ performance_profile_nrop_np_namespace }}"
+  register: nodepoolinfo
+
+- name: Create performance profile config map
+  kubernetes.core.k8s:
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ performance_profile_nrop_configmap_name }}"
+        namespace: "{{ performance_profile_nrop_np_namespace }}"
+      data:
+        tuning: |
+           apiVersion: performance.openshift.io/v2
+           kind: PerformanceProfile
+           metadata:
+             name: "{{ performance_profile_nrop_profile_name }}"
+               annotations:
+                kubeletconfig.experimental: |
+                  {"topologyManagerScope": "container",
+                  "cpuManagerPolicyOptions": {"full-pcpus-only": "false"}
+                  }
+           spec:
+             cpu:
+               isolated: 1,3-55,57,59-111
+               reserved: 0,2,56,58
+             nodeSelector:
+               node-role.kubernetes.io/worker: ""
+             numa:
+               topologyPolicy: single-numa-node
+
+- name: Apply configmap to nodepool
+  kubernetes.core.k8s:
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
+    state: present
+    definition:
+      apiVersion: hypershift.openshift.io/v1beta1
+      kind: NodePool
+      metadata:
+        name: "{{ nodepoolinfo.resources[0].metadata.name }}"
+        namespace: "{{ performance_profile_nrop_np_namespace }}"
+      spec:
+        tuningConfig:
+          name: "{{ performance_profile_nrop_configmap_name }}"
+
+- name: Check if Nodepool is updating
+  kubernetes.core.k8s_info:
+    api_version: hypershift.openshift.io/v1beta1
+    kind: NodePool
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
+    name: "{{ nodepoolinfo.resources[0].metadata.name }}"
+    namespace: "{{ performance_profile_nrop_np_namespace }}"
+  register: nodepool_updating
+  until:
+    - "'resources' in nodepool_updating"
+    - nodepool_updating.resources | length > 0
+    - nodepool_updating.resources[0].status.conditions | json_query("[?type=='UpdatingConfig' && status=='True']") | length > 0
+  retries: 10
+  delay: 20
+
+- name: Check if Nodepool is updated
+  kubernetes.core.k8s_info:
+    api_version: hypershift.openshift.io/v1beta1
+    kind: NodePool
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
+    name: "{{ nodepoolinfo.resources[0].metadata.name }}"
+    namespace: "{{ nodepoolinfo.resources[0].metadata.namespace }}"
+  register: nodepool_updated
+  until:
+    - "'resources' in nodepool_updated"
+    - nodepool_updated.resources | length > 0
+    - nodepool_updated.resources[0].status.conditions | json_query("[?type=='UpdatingConfig' && status=='False']") | length > 0
+  retries: 80
+  delay: 20
+
+- name: Lets wait for 10 min to settle
+  ansible.builtin.pause:
+    minutes: 10
