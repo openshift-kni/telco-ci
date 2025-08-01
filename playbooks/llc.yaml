@@ -1,0 +1,14 @@
+---
+# This playbook applies performance profile  to woerker-cnf nodes.
+# kubeconfig path of the openshift clusters example: /home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
+#
+# ansible-playbook -vv playbooks/performance_profile.yml -e kubeconfig=/home/kni/hcp-jobs/sno-cnfqe1/config/kubeconfig
+
+- hosts: localhost
+  tasks:
+
+    - name: Apply performance profile
+      vars:
+        pp_kubeconfig: "{{ kubeconfig }}"
+      ansible.builtin.include_role:
+        name: llc
