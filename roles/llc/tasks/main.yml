@@ -1,4 +1,40 @@
 ---
+- name: Create LLC machine config pool
+  kubernetes.core.k8s:
+    kubeconfig: "{{ cnf_kubeconfig | default(pp_kubeconfig) | default(omit) }}"
+    state: present
+    definition:
+      apiVersion: machineconfiguration.openshift.io/v1
+      kind: MachineConfigPool
+      labels:
+        machineconfiguration.openshift.io/role: worker-cnf
+      metadata:
+        name: "{{ llc_mcp_name }}"
+        namespace: "{{ llc_mcp_namespace | default(omit) }}"
+      spec:
+        machineConfigSelector:
+          matchExpressions:
+            - { key: machineconfiguration.openshift.io/role, operator: In, values: [worker-cnf, worker] }
+        pause: false
+        nodeSelector:
+          matchLabels:
+            node-role.kubernetes.io/worker-cnf: ""
+
+- name: Wait for the 'worker-cnf' MachineConfigPool to be created
+  kubernetes.core.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+    name: worker-cnf
+    kubeconfig: "{{ cnf_kubeconfig }}"
+  register: mcp_info
+  until: mcp_info.resources | default([]) | length > 0
+  retries: 5
+  delay: 10
+  # The `changed_when` is set to false because this is a polling task and
+  # should not be considered a change to the system.
+  changed_when: false
+
+
 - name: Create LLC performance profile
   kubernetes.core.k8s:
     kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
