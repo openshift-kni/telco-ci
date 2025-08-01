@@ -39,17 +39,30 @@
           perPodPowerManagement: false
           realTime: true
 
-- name: Wait for performance profile to be applied
+- name: Poll mcp until it starts updating
   kubernetes.core.k8s_info:
-    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
-    api_version: performance.openshift.io/v2
-    kind: PerformanceProfile
-    name: "{{ llc_performance_profile_name }}"
-    namespace: "{{ llc_performance_profile_namespace }}"
-  register: performance_profile_status
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+    name: "{{ llc_mcp_name }}"
+    kubeconfig: "{{ cnf_kubeconfig | default(pp_kubeconfig) | default(omit) }}"
+  register: mcp_info
   until:
-    - "'resources' in performance_profile_status"
-    - performance_profile_status.resources | length > 0
-    - performance_profile_status.resources[0].status is defined
-  retries: 30
+    - "'resources' in mcp_info"
+    - mcp_info.resources | length > 0
+    - mcp_info.resources[0].status.conditions | json_query("[?type=='Updating' && status=='True']") | length > 0
+  retries: 5
   delay: 10
+
+- name: Poll mcp until it is updated
+  kubernetes.core.k8s_info:
+    api_version: machineconfiguration.openshift.io/v1
+    kind: MachineConfigPool
+    name: "{{ llc_mcp_name }}"
+    kubeconfig: "{{ cnf_kubeconfig | default(pp_kubeconfig) | default(omit) }}"
+  register: mcp_updated_info
+  until:
+    - "'resources' in mcp_updated_info"
+    - mcp_updated_info.resources | length > 0
+    - mcp_updated_info.resources[0].status.conditions | json_query("[?type=='Updated' && status=='True']") | length > 0
+  retries: 10
+  delay: 30

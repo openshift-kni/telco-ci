@@ -1,3 +1,4 @@
 ---
 llc_performance_profile_name: performance
 llc_performance_profile_namespace: openshift-cluster-node-tuning-operator
+llc_mcp_name: worker-cnf
