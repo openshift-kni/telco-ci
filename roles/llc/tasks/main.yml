@@ -1,7 +1,7 @@
 ---
 - name: Create LLC machine config pool
   kubernetes.core.k8s:
-    kubeconfig: "{{ cnf_kubeconfig | default(pp_kubeconfig) | default(omit) }}"
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
     state: present
     definition:
       apiVersion: machineconfiguration.openshift.io/v1
@@ -25,7 +25,7 @@
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
     name: worker-cnf
-    kubeconfig: "{{ cnf_kubeconfig }}"
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
   register: mcp_info
   until: mcp_info.resources | default([]) | length > 0
   retries: 5
@@ -80,7 +80,7 @@
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
     name: "{{ llc_mcp_name }}"
-    kubeconfig: "{{ cnf_kubeconfig | default(pp_kubeconfig) | default(omit) }}"
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
   register: mcp_info
   until:
     - "'resources' in mcp_info"
@@ -94,7 +94,7 @@
     api_version: machineconfiguration.openshift.io/v1
     kind: MachineConfigPool
     name: "{{ llc_mcp_name }}"
-    kubeconfig: "{{ cnf_kubeconfig | default(pp_kubeconfig) | default(omit) }}"
+    kubeconfig: "{{ pp_kubeconfig | default(omit) }}"
   register: mcp_updated_info
   until:
     - "'resources' in mcp_updated_info"
