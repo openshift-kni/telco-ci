@@ -92,7 +92,7 @@
     - mcp_info.resources[0].status is defined
     - mcp_info.resources[0].status.conditions is defined
     - mcp_info.resources[0].status.conditions | json_query("[?type=='Updating' && status=='True']") | length > 0
-  retries: 5
+  retries:60
   delay: 10
 
 - name: Poll mcp until it is updated
@@ -108,5 +108,7 @@
     - mcp_updated_info.resources[0].status is defined
     - mcp_updated_info.resources[0].status.conditions is defined
     - mcp_updated_info.resources[0].status.conditions | json_query("[?type=='Updated' && status=='True']") | length > 0
-  retries: 30
+  retries: 60
   delay: 30
+
+
