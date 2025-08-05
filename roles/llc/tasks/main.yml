@@ -110,5 +110,3 @@
     - mcp_updated_info.resources[0].status.conditions | json_query("[?type=='Updated' && status=='True']") | length > 0
   retries: 60
   delay: 30
-
-
