@@ -6,11 +6,11 @@
     definition:
       apiVersion: machineconfiguration.openshift.io/v1
       kind: MachineConfigPool
-      labels:
-        machineconfiguration.openshift.io/role: worker-cnf
       metadata:
         name: "{{ llc_mcp_name }}"
         namespace: "{{ llc_mcp_namespace | default(omit) }}"
+        labels:
+          machineconfiguration.openshift.io/role: worker-cnf
       spec:
         machineConfigSelector:
           matchExpressions:
