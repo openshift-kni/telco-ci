@@ -6,11 +6,11 @@
     definition:
       apiVersion: machineconfiguration.openshift.io/v1
       kind: MachineConfigPool
-      labels:
-        machineconfiguration.openshift.io/role: worker-cnf
       metadata:
         name: "{{ llc_mcp_name }}"
         namespace: "{{ llc_mcp_namespace | default(omit) }}"
+        labels:
+          machineconfiguration.openshift.io/role: worker-cnf
       spec:
         machineConfigSelector:
           matchExpressions:
@@ -75,6 +75,10 @@
           perPodPowerManagement: false
           realTime: true
 
+- name: Wait for MachineConfigPool to initialize
+  ansible.builtin.pause:
+    seconds: 8
+
 - name: Poll mcp until it starts updating
   kubernetes.core.k8s_info:
     api_version: machineconfiguration.openshift.io/v1
@@ -85,8 +89,10 @@
   until:
     - "'resources' in mcp_info"
     - mcp_info.resources | length > 0
+    - mcp_info.resources[0].status is defined
+    - mcp_info.resources[0].status.conditions is defined
     - mcp_info.resources[0].status.conditions | json_query("[?type=='Updating' && status=='True']") | length > 0
-  retries: 5
+  retries: 30
   delay: 10
 
 - name: Poll mcp until it is updated
@@ -99,6 +105,8 @@
   until:
     - "'resources' in mcp_updated_info"
     - mcp_updated_info.resources | length > 0
+    - mcp_updated_info.resources[0].status is defined
+    - mcp_updated_info.resources[0].status.conditions is defined
     - mcp_updated_info.resources[0].status.conditions | json_query("[?type=='Updated' && status=='True']") | length > 0
-  retries: 10
+  retries: 60
   delay: 30
