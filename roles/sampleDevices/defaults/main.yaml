@@ -1,1 +1,0 @@
-local_device_plugin_image: "quay.io/k8stopologyawareschedwg/sample-device-plugin:v0.2.2"

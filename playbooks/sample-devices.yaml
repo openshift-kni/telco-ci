@@ -11,11 +11,11 @@
   tasks:
     - name: Install Sample Devices for NROP
       ansible.builtin.include_role:
-        name: sampleDevices
+        name: sample_devices
       vars:
-        sampleDevices_hosted_kubeconfig: "{{ hosted_kubeconfig }}"
+        sample_devices_hosted_kubeconfig: "{{ hosted_kubeconfig }}"
     - name: Validate kubeconfig
       ansible.builtin.stat:
-        path: "{{ sampleDevices_hosted_kubeconfig }}"
+        path: "{{ sample_devices_hosted_kubeconfig }}"
       register: kubeconfig_stat
       failed_when: not kubeconfig_stat.stat.exists

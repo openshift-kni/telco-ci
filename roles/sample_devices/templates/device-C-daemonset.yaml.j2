@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: device-plugin-a-ds
+  name: device-plugin-c-ds
   namespace: sample-dev-ns
 spec:
   selector:
       matchLabels:
-        name: device-plugin-a
+        name: device-plugin-c
   template:
     metadata:
       labels:
-        name: device-plugin-a
+        name: device-plugin-c
     spec:
       serviceAccountName: sampledevices-sa
       containers:
-      - name: device-plugin-a-container
+      - name: device-plugin-c-container
         securityContext:
           privileged: true
-        image: {{ local_device_plugin_image }}
+        image: {{ sample_devices_device_plugin_image }}
         imagePullPolicy: IfNotPresent
         env:
         - name: DEVICE_RESOURCE_NAME
-          value: "example.com/deviceA"
+          value: "example.com/deviceC"
         command:
           - /bin/deviceplugin
         args:
@@ -30,7 +30,7 @@ spec:
         volumeMounts:
         - name: kubeletsockets
           mountPath: /var/lib/kubelet/device-plugins
-        - name: device-a-config-vol
+        - name: device-c-config-vol
           mountPath: /etc/devices
       volumes:
       - name: kubeletsockets
@@ -38,5 +38,5 @@ spec:
           path: /var/lib/kubelet/device-plugins
           type: Directory
       - configMap:
-          name: device-a-configmap
-        name: device-a-config-vol
+          name: device-c-configmap
+        name: device-c-config-vol

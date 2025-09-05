@@ -2,7 +2,7 @@
 - name: Create namespace
   kubernetes.core.k8s:
     api_version: v1
-    kubeconfig: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
+    kubeconfig: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
     kind: Namespace
     name: sample-dev-ns
     state: present
@@ -17,7 +17,7 @@
 
 - name: Add scc permission to the new ns
   environment:
-    KUBECONFIG: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
+    KUBECONFIG: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
   ansible.builtin.command: >
     oc adm policy add-scc-to-user privileged -z default -n sample-dev-ns
   register: add_scc
@@ -26,7 +26,7 @@
 - name: Create service Account
   kubernetes.core.k8s:
     api_version: v1
-    kubeconfig: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
+    kubeconfig: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
     kind: ServiceAccount
     name: sampledevices-sa
     state: present
@@ -38,7 +38,7 @@
 - name: Create role for sample devices
   kubernetes.core.k8s:
     api_version: rbac.authorization.k8s.io/v1
-    kubeconfig: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
+    kubeconfig: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
     kind: Role
     name: sampledevices-ro
     state: present
@@ -60,7 +60,7 @@
 - name: Create role binding for sample devices
   kubernetes.core.k8s:
     api_version: rbac.authorization.k8s.io/v1
-    kubeconfig: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
+    kubeconfig: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
     kind: Role
     name: sampledevices-rb
     state: present
@@ -80,7 +80,7 @@
 - name: Create temporary directory
   ansible.builtin.tempfile:
     state: directory
-    suffix: sampleDevices
+    suffix: sample_devices
   register: tmp_dir_result
 
 - name: Create configmaps
@@ -97,8 +97,8 @@
 
     - name: Apply all config maps
       environment:
-        KUBECONFIG: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
-      ansible.builtin.shell:
+        KUBECONFIG: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
+      ansible.builtin.command:
         oc apply -f {{ tmp_dir_result.path }}/{{ item }}
       loop:
         - device-A-configmap.yaml
@@ -121,17 +121,19 @@
 
     - name: Apply all daemonsets
       environment:
-        KUBECONFIG: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
-      ansible.builtin.shell:
+        KUBECONFIG: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
+      ansible.builtin.command:
         oc apply -f {{ tmp_dir_result.path }}/{{ item }}
       loop:
         - device-A-daemonset.yaml
         - device-B-daemonset.yaml
         - device-C-daemonset.yaml
+      register: daemonsets
+      changed_when: daemonsets.rc != 0
 
 - name: Add scc permission to the new ns
   environment:
-    KUBECONFIG: "{{ sampleDevices_hosted_kubeconfig | default(omit) }}"
+    KUBECONFIG: "{{ sample_devices_hosted_kubeconfig | default(omit) }}"
   ansible.builtin.command: >
     oc adm policy add-scc-to-user privileged -z sampledevices-sa -n sample-dev-ns
   register: add_scc
