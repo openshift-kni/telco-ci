@@ -1,0 +1,21 @@
+---
+##
+# This playbook creates sample devices for Numa Resources operator functional tests
+# kubeconfig path of the clusters example: /root/.kcli/clusters/europa/auth/kubeconfig
+#
+# ansible-playbook -vv playbooks/sample-devices.yaml -e hosted_kubeconfig=/home/kni/hcp-jobs/cnfqe1/out/cnfqe1-kubeadmin-kubeconfig
+##
+
+- name: Install Sample Devices
+  hosts: localhost
+  tasks:
+    - name: Install Sample Devices for NROP
+      ansible.builtin.include_role:
+        name: sample_devices
+      vars:
+        sample_devices_hosted_kubeconfig: "{{ hosted_kubeconfig }}"
+    - name: Validate kubeconfig
+      ansible.builtin.stat:
+        path: "{{ sample_devices_hosted_kubeconfig }}"
+      register: kubeconfig_stat
+      failed_when: not kubeconfig_stat.stat.exists
