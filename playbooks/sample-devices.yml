@@ -16,6 +16,6 @@
         sample_devices_hosted_kubeconfig: "{{ hosted_kubeconfig }}"
     - name: Validate kubeconfig
       ansible.builtin.stat:
-        path: "{{ sample_devices_hosted_kubeconfig }}"
+        path: "{{ hosted_kubeconfig }}"
       register: kubeconfig_stat
       failed_when: not kubeconfig_stat.stat.exists
